@@ -1,56 +1,53 @@
-<!--
-Project banner. Spec:
-  https://github.com/amcheste/alanchester-brand/blob/main/docs/banner-spec.md
-
-To enable: generate a banner via Claude Design (paste the
-design-session-brief plus the banner-spec request prompt), land
-the generated SVG and PNG exports in `assets/`, then uncomment the
-<img> block below by removing this whole HTML comment block and
-restoring the <p> tag.
-
-If this repo doesn't need a banner, delete this placeholder
-entirely.
-
-<p align="center">
-  <img src="assets/banner.svg" alt="<project> banner" width="100%">
-</p>
--->
-
 <div align="center">
 
-# repo-name
+# ccc-account-service
 
-**One-line description of what this project does.**
+**Identity, credentials, and token issuance for the Command and Control Center.**
 
-[![Validate](https://github.com/amcheste/repo-name/actions/workflows/validate.yml/badge.svg)](https://github.com/amcheste/repo-name/actions/workflows/validate.yml)
-[![Version](https://img.shields.io/github/v/tag/amcheste/repo-name?label=version&sort=semver&color=0B0B0C)](https://github.com/amcheste/repo-name/releases)
+[![Validate](https://github.com/amcheste/ccc-account-service/actions/workflows/validate.yml/badge.svg)](https://github.com/amcheste/ccc-account-service/actions/workflows/validate.yml)
+[![Version](https://img.shields.io/github/v/tag/amcheste/ccc-account-service?label=version&sort=semver&color=0B0B0C)](https://github.com/amcheste/ccc-account-service/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1F4D3A.svg)](LICENSE)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/amcheste/repo-name/badge)](https://scorecard.dev/viewer/?uri=github.com/amcheste/repo-name)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/amcheste/ccc-account-service/badge)](https://scorecard.dev/viewer/?uri=github.com/amcheste/ccc-account-service)
 
 </div>
 
 ---
 
-<!--
-This scaffold is brand-aligned with `@amcheste/brand`
-(https://github.com/amcheste/alanchester-brand). Badge colors,
-voice, and the accent rule already match the brand by default:
+The account service is the first CCC microservice: username/password
+authentication issuing short-lived Ed25519 JWTs, rotated refresh
+tokens, and coarse household roles. Full design, including everything
+this skeleton does not implement yet, lives in
+[docs/design/account-service.md](docs/design/account-service.md).
 
-  - Hunter Green `#1F4D3A` for the license badge
-  - Ink `#0B0B0C` for the version badge
-  - Hunter green is reserved for data, pivots, and the δ; don't
-    decorate with it
-  - No em dashes in prose, calibrated hedges, lowercase eyebrows,
-    numerical specificity
+## Surfaces
 
-When filling in this README and other docs, follow the brand voice
-rules:
-https://github.com/amcheste/alanchester-brand/blob/main/docs/voice.md
+| Port | Protocol | Audience |
+|------|----------|----------|
+| 8080 | REST/JSON | web frontend, via ingress |
+| 9090 | gRPC (`ccc.account.v1`) | other CCC services |
+| 8081 | HTTP ops | kubelet probes, Prometheus |
 
-For deeper integration (palette adoption, mark embedding, full
-theming sweep), paste the theming prompt into a Claude Code session
-here:
-https://github.com/amcheste/alanchester-brand/blob/main/docs/theming-prompt.md
--->
+The gRPC contract is defined in
+[ccc-protos](https://github.com/amcheste/ccc-protos); this repo
+consumes the generated module at a tagged release.
 
-<!-- TODO: fill in the rest of the README -->
+## Development
+
+```sh
+make build            # compile everything
+make test             # unit tests
+make lint             # golangci-lint, same config as CI
+make docker           # local single-arch image
+make docker-multiarch # linux/arm64 + linux/amd64 manifest via buildx
+```
+
+Runs on Go 1.26, CGO disabled everywhere. Keep it that way: the
+multi-arch build cross-compiles and any CGO dependency breaks it.
+
+## Deployment
+
+`deploy/base/` is a generic kustomize base: probes, ports, resource
+envelope sized for Pi 5 nodes, and nothing cluster-specific. The
+private ccc-deploy repo overlays it with namespace, image pins,
+ingress, and sealed secrets. If a value would change when someone else
+deployed this service, it does not belong in this repo.
