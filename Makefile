@@ -10,6 +10,8 @@ build:
 test:
 	go test ./...
 
+# Requires golangci-lint v2 (config is version "2"):
+#   go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
 lint:
 	golangci-lint run
 
