@@ -1,0 +1,16 @@
+# Generic kustomize base for the account service. Cluster-specific
+# values (namespace, image tag pins, ingress, secrets, replica and
+# resource overrides) belong in the private ccc-deploy repo's overlay,
+# never here.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: account-service
+      app.kubernetes.io/part-of: ccc
