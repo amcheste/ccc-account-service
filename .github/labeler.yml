@@ -9,3 +9,11 @@ ci:
 docs:
   - changed-files:
     - any-glob-to-any-file: ['*.md', 'docs/**']
+
+go:
+  - changed-files:
+    - any-glob-to-any-file: ['**/*.go', 'go.mod', 'go.sum']
+
+deploy:
+  - changed-files:
+    - any-glob-to-any-file: ['deploy/**', 'Dockerfile']

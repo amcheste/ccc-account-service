@@ -46,21 +46,27 @@ jobs:
             || echo "source=false" >> "$GITHUB_OUTPUT"
 
   # ── Lint ───────────────────────────────────────────────────────────────────
-  # Customise this job for your project's language/toolchain.
-  # Examples:
-  #   Shell:      shellcheck **/*.sh
-  #   Go:         go vet ./... && golangci-lint run
-  #   Python:     ruff check . && mypy .
-  #   Node:       npm run lint
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Lint
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+
+      - uses: golangci/golangci-lint-action@8564da7cb3c6866ed1da648ca8f00a258ef0c802 # v6.5.2
+        with:
+          version: v1.64.8
+
+      - name: Build (both architectures)
         run: |
-          echo "TODO: add lint steps for this project"
+          CGO_ENABLED=0 GOARCH=arm64 go build ./...
+          CGO_ENABLED=0 GOARCH=amd64 go build ./...
+
+      - name: Test
+        run: go test ./...
 
   # ── Commit Lint (PRs only) ──────────────────────────────────────────────────
   commit-lint:
