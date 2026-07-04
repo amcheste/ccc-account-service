@@ -44,5 +44,9 @@ spec:
               drop: ["ALL"]
       securityContext:
         runAsNonRoot: true
+        # Numeric UID/GID for distroless's "nonroot" user; kubelet cannot
+        # verify runAsNonRoot against a symbolic image user.
+        runAsUser: 65532
+        runAsGroup: 65532
         seccompProfile:
           type: RuntimeDefault

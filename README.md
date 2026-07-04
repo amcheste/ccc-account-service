@@ -44,6 +44,20 @@ make docker-multiarch # linux/arm64 + linux/amd64 manifest via buildx
 Runs on Go 1.26, CGO disabled everywhere. Keep it that way: the
 multi-arch build cross-compiles and any CGO dependency breaks it.
 
+### Local cluster (kind)
+
+```sh
+make kind-up      # create the ccc kind cluster and deploy the service
+make kind-deploy  # rebuild and roll the image after a code change
+make kind-down    # tear it all down
+```
+
+`kind-up` is idempotent and ends with the pod ready; it prints the
+port-forward and curl commands for hitting `/healthz`. The
+`deploy/kind` overlay pins one replica and the `dev` image tag; it is
+the only overlay that lives in this repo because it targets a
+throwaway local cluster, not the homelab.
+
 ## Deployment
 
 `deploy/base/` is a generic kustomize base: probes, ports, resource
