@@ -69,6 +69,12 @@ and metrics. No separate BFF and no grpc-gateway: the external surface
 is auth-shaped (cookies, credentials, rate limits) and hand-written
 handlers over the same service layer stay simpler at this scale.
 
+The REST listener serves under a configurable base path
+(`CCC_HTTP_BASE_PATH`, e.g. `/api/account`). The ingress routes by
+prefix without rewriting, so cookie Path attributes and redirects
+always match what the browser sees; path rewrites at the ingress are
+the classic source of broken auth cookies and are banned platform-wide.
+
 The gRPC contract lives in `ccc-protos` (`ccc.account.v1`):
 `ValidateToken`, `GetUser`, `ListUsers`, `GetUserRoles`. Other services
 default to local JWT verification against the JWKS endpoint; the

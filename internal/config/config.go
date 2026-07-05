@@ -9,6 +9,12 @@ import "os"
 type Config struct {
 	// HTTPAddr serves the external REST API.
 	HTTPAddr string
+	// HTTPBasePath prefixes every REST route (e.g. "/api/account") so
+	// the ingress can route by prefix without rewriting. Rewrites at
+	// the ingress break cookie Path attributes; serving under the
+	// externally visible path avoids that whole failure class. Empty
+	// means routes mount at the root.
+	HTTPBasePath string
 	// GRPCAddr serves the internal gRPC API for other CCC services.
 	GRPCAddr string
 	// OpsAddr serves /healthz, /readyz, and /metrics.
@@ -19,9 +25,10 @@ type Config struct {
 // that match the ports documented in the design (§3, §5).
 func Load() Config {
 	return Config{
-		HTTPAddr: getenv("CCC_HTTP_ADDR", ":8080"),
-		GRPCAddr: getenv("CCC_GRPC_ADDR", ":9090"),
-		OpsAddr:  getenv("CCC_OPS_ADDR", ":8081"),
+		HTTPAddr:     getenv("CCC_HTTP_ADDR", ":8080"),
+		HTTPBasePath: getenv("CCC_HTTP_BASE_PATH", ""),
+		GRPCAddr:     getenv("CCC_GRPC_ADDR", ":9090"),
+		OpsAddr:      getenv("CCC_OPS_ADDR", ":8081"),
 	}
 }
 
