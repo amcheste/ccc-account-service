@@ -27,11 +27,15 @@ jobs:
         with:
           ref: develop
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Check for dependency commits since last tag
         id: check
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          # List tags instead of 'git describe': release tags point at the
+          # --no-ff merge commits on main, which are never reachable from a
+          # develop checkout, so describe always came up empty here.
+          LAST_TAG=$(git tag --list 'v*' --sort=-v:refname | head -1)
 
           if [[ -z "$LAST_TAG" ]]; then
             echo "No tags found — skipping"
