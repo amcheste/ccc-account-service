@@ -1,0 +1,26 @@
+# Local development overlay for kind (make kind-up / kind-deploy).
+# This is the one overlay allowed in the public repo because it targets
+# a throwaway local cluster, not the real one; cluster state for the
+# homelab stays in the private ccc-deploy repo.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ccc
+
+resources:
+  - namespace.yaml
+  - ../base
+
+images:
+  - name: ghcr.io/amcheste/ccc-account-service
+    newTag: dev
+
+patches:
+  # One replica is plenty for a laptop smoke test.
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: account-service

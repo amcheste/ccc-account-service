@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-service
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: account-service
+          image: ghcr.io/amcheste/ccc-account-service:latest
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: grpc
+              containerPort: 9090
+            - name: ops
+              containerPort: 8081
+          # Liveness is process-only; readiness will gate on the DB ping
+          # once the store lands (design §5).
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: ops
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: ops
+            periodSeconds: 5
+          # Sized for Pi 5 nodes: memory limit covers the argon2id
+          # hashing budget (19 MiB x 4 concurrent) plus Go baseline.
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      securityContext:
+        runAsNonRoot: true
+        # Numeric UID/GID for distroless's "nonroot" user; kubelet cannot
+        # verify runAsNonRoot against a symbolic image user.
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault

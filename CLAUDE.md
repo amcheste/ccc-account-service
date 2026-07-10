@@ -6,7 +6,30 @@ This file is read by Claude Code at the start of every session in this repo.
 
 ## About This Repo
 
-<!-- TODO: describe what this project does -->
+Go microservice providing identity for the Command and Control Center
+(CCC) homelab platform: username/password login, Ed25519 JWT issuance,
+rotated refresh tokens, and household roles (admin/member). Runs on a
+mixed arm64/amd64 k8s cluster (Raspberry Pi 5 + x86).
+
+The approved design is `docs/design/account-service.md`. Read it before
+structural changes, and update it in the same PR when a decision
+changes.
+
+Rules that matter here:
+
+- CGO stays disabled. The multi-arch image cross-compiles for
+  linux/arm64 + linux/amd64; a CGO dependency breaks the build. Pick
+  pure-Go libraries (pgx, x/crypto/argon2, modernc-style deps).
+- Business logic lives in `internal/service`. Transport packages
+  (`internal/httpserver`, `internal/grpcserver`) are thin adapters and
+  never touch the store directly.
+- gRPC contracts come from `github.com/amcheste/ccc-protos/gen/go` at
+  a tagged release. Never define cross-service protos in this repo.
+- `deploy/base/` is a generic kustomize base. Anything
+  cluster-specific (namespaces, image pins, secrets, ingress) belongs
+  in the private ccc-deploy repo, not here.
+- Secrets never appear in code, config defaults, or tests. They arrive
+  as env vars from k8s Secrets.
 
 ---
 
