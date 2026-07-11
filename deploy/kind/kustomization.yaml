@@ -24,3 +24,24 @@ patches:
     target:
       kind: Deployment
       name: account-service
+  # Wire the throwaway postgres from the ccc-dev stack. The secret is
+  # generated at runtime by ccc-dev's up.sh, never committed anywhere.
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: CCC_DB_HOST
+            value: postgres
+          - name: CCC_DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials
+                key: username
+          - name: CCC_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials
+                key: password
+    target:
+      kind: Deployment
+      name: account-service

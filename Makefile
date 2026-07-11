@@ -4,13 +4,18 @@ PLATFORMS := linux/arm64,linux/amd64
 KIND_CLUSTER := ccc
 KIND_CONTEXT := kind-$(KIND_CLUSTER)
 
-.PHONY: build test lint docker docker-multiarch kind-up kind-deploy kind-down
+.PHONY: build test test-integration lint docker docker-multiarch kind-up kind-deploy kind-down
 
 build:
 	go build ./...
 
 test:
 	go test ./...
+
+# Store tests against a real Postgres via testcontainers; needs a
+# running Docker daemon.
+test-integration:
+	go test -tags integration ./internal/store/...
 
 # Requires golangci-lint v2 (config is version "2"):
 #   go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2

@@ -43,6 +43,7 @@ credentials
   user_id       uuid PK -> users.id
   kind          text DEFAULT 'password'   -- future: 'oidc', 'passkey'
   password_hash text NOT NULL             -- PHC string, params embedded
+  must_change   boolean DEFAULT false     -- set by admin resets; login forces a change
   updated_at    timestamptz
 
 refresh_tokens
