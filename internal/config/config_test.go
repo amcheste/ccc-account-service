@@ -32,3 +32,16 @@ func TestBasePathDefaultsEmpty(t *testing.T) {
 		t.Errorf("HTTPBasePath default = %q, want empty", got)
 	}
 }
+
+func TestDatabaseURL(t *testing.T) {
+	if got := Load().DatabaseURL(); got != "" {
+		t.Errorf("DatabaseURL with no DBHost = %q, want empty", got)
+	}
+
+	t.Setenv("CCC_DB_HOST", "postgres")
+	t.Setenv("CCC_DB_PASSWORD", "p@ss/word")
+	want := "postgres://ccc:p%40ss%2Fword@postgres:5432/account?sslmode=disable" //nolint:gosec // fixture, not a real credential
+	if got := Load().DatabaseURL(); got != want {
+		t.Errorf("DatabaseURL = %q, want %q", got, want)
+	}
+}
