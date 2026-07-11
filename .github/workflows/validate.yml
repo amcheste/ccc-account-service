@@ -68,6 +68,9 @@ jobs:
       - name: Test
         run: go test ./...
 
+      - name: Integration tests (store against real Postgres)
+        run: go test -tags integration ./internal/store/...
+
   # ── Commit Lint (PRs only) ──────────────────────────────────────────────────
   commit-lint:
     name: Commit Lint
