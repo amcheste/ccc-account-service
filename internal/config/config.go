@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 )
 
 // Config holds all runtime configuration for the account service.
@@ -33,6 +34,21 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBName     string
+
+	// JWTSigningKey is the base64-encoded 32-byte Ed25519 seed from a
+	// k8s Secret. Empty disables the REST API (skeleton mode).
+	JWTSigningKey string
+	// RefreshTTL is the sliding refresh-token lifetime.
+	RefreshTTL time.Duration
+	// CookieSecure sets the Secure attribute on the refresh cookie.
+	// True in production; the ccc-dev stack serves plain http and
+	// overrides it to false.
+	CookieSecure bool
+
+	// BootstrapAdmin creates the first admin account at startup when
+	// the users table is empty (design §8: no open registration).
+	BootstrapAdmin         string
+	BootstrapAdminPassword string
 }
 
 // DatabaseURL assembles a postgres:// DSN from the DB* fields, or
@@ -66,7 +82,22 @@ func Load() Config {
 		DBUser:       getenv("CCC_DB_USER", "ccc"),
 		DBPassword:   getenv("CCC_DB_PASSWORD", ""),
 		DBName:       getenv("CCC_DB_NAME", "account"),
+
+		JWTSigningKey:          getenv("CCC_JWT_SIGNING_KEY", ""),
+		RefreshTTL:             getduration("CCC_REFRESH_TTL", 30*24*time.Hour),
+		CookieSecure:           getenv("CCC_COOKIE_SECURE", "true") == "true",
+		BootstrapAdmin:         getenv("CCC_BOOTSTRAP_ADMIN", ""),
+		BootstrapAdminPassword: getenv("CCC_BOOTSTRAP_ADMIN_PASSWORD", ""),
 	}
+}
+
+func getduration(key string, fallback time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			return d
+		}
+	}
+	return fallback
 }
 
 func getenv(key, fallback string) string {
