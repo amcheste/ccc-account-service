@@ -42,6 +42,24 @@ patches:
               secretKeyRef:
                 name: postgres-credentials
                 key: password
+          - name: CCC_HTTP_BASE_PATH
+            value: /api/account
+          # The ccc-dev stack serves plain http; localhost is a secure
+          # context so this stays true-by-default in the homelab only.
+          - name: CCC_COOKIE_SECURE
+            value: "false"
+          - name: CCC_JWT_SIGNING_KEY
+            valueFrom:
+              secretKeyRef:
+                name: account-service-keys
+                key: jwt-signing-seed
+          - name: CCC_BOOTSTRAP_ADMIN
+            value: alan
+          - name: CCC_BOOTSTRAP_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: account-service-keys
+                key: bootstrap-admin-password
     target:
       kind: Deployment
       name: account-service
